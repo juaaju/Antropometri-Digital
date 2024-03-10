@@ -4,3 +4,7 @@ Antropometri adalah metode yang digunakan untuk menilai ukuran, proporsi, dan ko
 Pada proyek ini, ukuran yang diprediksi adalah bayi atau balita. Bayi yang digunakan adalah boneka yang sudah difoto dan posisinya sudah diatur.
 
 Cukup menjalankan semua code dan memasukkan gambar, sudah cukup untuk membuat prediksi perhitungan.
+
+- File SAM AND POSE.ipnyb adalah file yang menggunakan model sam asli dari META
+- File FAST_SAM_FINAL.ipynb adalah file yang menggunakan model fast sam
+- File FASTSAM_OOP.ipynb sama seperti FAST_SAM_FINAL tapi menggunakan OOP
