@@ -157,9 +157,6 @@ def tarik_garis(mask, pointFrom_mediapipe):
   matching_indices = [index for index, value in enumerate(indices_x) if value == val_poin_pose]  # Dapatkan indeks dari nilai val_poin_pose di indices_x
   matching_indices_y_values = [indices_y[index] for index in matching_indices]  # Ambil nilai indices_y yang memiliki indeks yang sama dengan indices_x yang cocok
 
-  print(indices)
-  print(indices_x)
-  print(indices_y)
   #print("Nilai indices_x yang cocok dengan,", int(pointFrom_mediapipe[0]), "adalah", matching_indices)
   #print("Nilai indices_y dengan indeks yang sama:", matching_indices_y_values)
   #print(indices[1])
@@ -204,68 +201,71 @@ def detect(img):
 
   return coords, lists, width
 
-#ambil path foto
-image = FastSam('images/bayi-up.jpg')
-coords, right_foot, left_foot = image.get_input_point()
-coords = coords.astype(int)
+def all_params(image_path):
+  print("The Process is Going...")
+  image = FastSam(image_path)
+  coords, right_foot, left_foot = image.get_input_point()
+  coords = coords.astype(int)
 
-#input_label
-input_label_kepala = np.array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-input_label_paha = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0])
-input_label_lengan = np.array([0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+  input_label_kepala = np.array([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+  input_label_paha = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0])
+  input_label_lengan = np.array([0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
-# all masking
-masking_kepala = image.masking(coords, input_label_kepala)
-masking_lengan = image.masking(coords, input_label_lengan)
-masking_paha = image.masking(coords, input_label_paha)
+  x_rightshoulder = coords[1][0]
+  y_rightshoulder = coords[1][1]
+  x_leftshoulder = coords[2][0]
+  y_leftshoulder = coords[2][1]
+  x_righthip = coords[5][0]
+  y_righthip = coords[5][1]
+  x_lefthip = coords[6][0]
+  y_lefthip = coords[6][1]
 
-#ambil koordinat
-x_rightshoulder = coords[1][0]
-y_rightshoulder = coords[1][1]
-x_leftshoulder = coords[2][0]
-y_leftshoulder = coords[2][1]
-x_righthip = coords[5][0]
-y_righthip = coords[5][1]
-x_lefthip = coords[6][0]
-y_lefthip = coords[6][1]
+  def coef(img):
+    real_coin_size = 2.7
+    coin_size = detect(img)[2]
+    coef = real_coin_size / coin_size
+    return coef
 
-def coef(img):
-  real_coin_size = 2.7
-  coin_size = detect(img)[2]
-  coef = real_coin_size / coin_size
-  return coef
+  koef_koin1 = coef(image_path)
 
-#mencari koefisien koin
-koef_koin1 = coef('images/bayi-up.jpg')
+  # all masking
+  print("Masking...")
+  masking_kepala = image.masking(coords, input_label_kepala)
+  masking_lengan = image.masking(coords, input_label_lengan)
+  masking_paha = image.masking(coords, input_label_paha)
 
-# all masking
-masking_kepala = image.masking(coords, input_label_kepala)
-masking_lengan = image.masking(coords, input_label_lengan)
-masking_paha = image.masking(coords, input_label_paha)
+  # tarik garis
+  print("Measurment...")
+  garis_kepala = tarik_garis(masking_kepala, coords[0])*koef_koin1
+  garis_kepala2 = garis_kepala*0.8
 
-# tarik garis
-garis_kepala = tarik_garis(masking_kepala, coords[0])*koef_koin1
-garis_kepala2 = garis_kepala*0.6
+  garis_lengan = tarik_garis(masking_lengan, coords[3])*koef_koin1
+  garis_lengan2 = garis_lengan*0.7
 
-garis_lengan = tarik_garis(masking_lengan, coords[5])*koef_koin1
-garis_lengan2 = garis_lengan*0.6
+  garis_paha = tarik_garis(masking_paha, coords[10])*koef_koin1
+  garis_paha2 = garis_paha*0.8
 
-garis_paha = tarik_garis(masking_paha, coords[10])*koef_koin1
-garis_paha2 = garis_paha*0.01
+  #perhitungan lingkar
+  lingkar_kepala = perhitungan_elips(garis_kepala, garis_kepala2)
+  lingkar_lengan = perhitungan_elips(garis_lengan, garis_lengan2)
+  lingkar_paha = perhitungan_elips(garis_paha, garis_paha2)
 
-#perhitungan lingkar
-lingkar_kepala = perhitungan_elips(garis_kepala, garis_kepala2)
-lingkar_lengan = perhitungan_elips(garis_lengan, garis_lengan2)
-lingkar_paha = perhitungan_elips(garis_paha, garis_paha2)
+  tinggi_dada = garis_kepala
+  tinggi_perut = garis_kepala
 
-tinggi_dada = garis_kepala*1.2
-tinggi_perut = garis_kepala*1.25
+  lebar_dada=abs(y_rightshoulder-y_leftshoulder)*koef_koin1
+  lebar_pinggang=(abs(y_righthip-y_lefthip)-0.4*abs(y_righthip-y_lefthip))*koef_koin1
 
-lebar_dada=abs(y_rightshoulder-y_leftshoulder)*koef_koin1
-lebar_pinggang=(abs(y_righthip-y_lefthip)-0.4*abs(y_righthip-y_lefthip))*koef_koin1
+  # perhitungan lingkar
+  lingkar_dada = perhitungan_elips(tinggi_dada, lebar_dada)
+  lingkar_perut = perhitungan_elips(tinggi_perut, lebar_pinggang)
 
-# perhitungan lingkar
-lingkar_dada = perhitungan_elips(tinggi_dada, lebar_dada)
-lingkar_perut = perhitungan_elips(tinggi_perut, lebar_pinggang)
+  #menghitung total panjang badan
+  panjang_kepala = calculate_bbox_from_mask(masking_kepala)[1]*koef_koin1
+  panjang_badan = abs(x_leftshoulder-x_lefthip)*koef_koin1
+  panjang_kaki = (right_foot + left_foot)*koef_koin1/2
+  total_badan = panjang_kepala + panjang_badan + panjang_kaki
 
-print(lingkar_dada, lingkar_perut, lingkar_kepala, lingkar_lengan, lingkar_paha)
+  return lingkar_kepala, lingkar_lengan, lingkar_paha, lingkar_dada, lingkar_perut, total_badan
+
+print(all_params('images/bayi-up.jpeg'))
