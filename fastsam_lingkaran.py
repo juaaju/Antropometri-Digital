@@ -237,24 +237,24 @@ def all_params(image_path):
   # tarik garis
   print("Measurment...")
   garis_kepala = tarik_garis(masking_kepala, coords[0])*koef_koin1
-  garis_kepala2 = garis_kepala*0.8
+  garis_kepala2 = garis_kepala*1.12
 
   garis_lengan = tarik_garis(masking_lengan, coords[3])*koef_koin1
-  garis_lengan2 = garis_lengan*0.7
+  garis_lengan2 = garis_lengan*1.167
 
   garis_paha = tarik_garis(masking_paha, coords[10])*koef_koin1
-  garis_paha2 = garis_paha*0.8
+  garis_paha2 = garis_paha*1.125
 
   #perhitungan lingkar
   lingkar_kepala = perhitungan_elips(garis_kepala, garis_kepala2)
   lingkar_lengan = perhitungan_elips(garis_lengan, garis_lengan2)
   lingkar_paha = perhitungan_elips(garis_paha, garis_paha2)
 
-  tinggi_dada = garis_kepala
-  tinggi_perut = garis_kepala
-
   lebar_dada=abs(y_rightshoulder-y_leftshoulder)*koef_koin1
   lebar_pinggang=(abs(y_righthip-y_lefthip)-0.4*abs(y_righthip-y_lefthip))*koef_koin1
+
+  tinggi_dada = lebar_dada*0.834
+  tinggi_perut = lebar_pinggang*0.75
 
   # perhitungan lingkar
   lingkar_dada = perhitungan_elips(tinggi_dada, lebar_dada)
